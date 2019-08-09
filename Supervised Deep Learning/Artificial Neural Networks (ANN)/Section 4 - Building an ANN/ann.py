@@ -1,17 +1,3 @@
-# Artificial Neural Network
-
-# Installing Theano
-# pip install --upgrade --no-deps git+git://github.com/Theano/Theano.git
-
-# Installing Tensorflow
-# pip install tensorflow
-
-# Installing Keras
-# pip install --upgrade keras
-
-# Part 1 - Data Preprocessing
-
-# Importing the libraries
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
@@ -41,32 +27,26 @@ sc = StandardScaler()
 X_train = sc.fit_transform(X_train)
 X_test = sc.transform(X_test)
 
-# Part 2 - Now let's make the ANN!
-
-# Importing the Keras libraries and packages
+#Part 2 Making of ANN
 import keras
 from keras.models import Sequential
 from keras.layers import Dense
 
-# Initialising the ANN
-classifier = Sequential()
+#Initialise ANN
+classifier  =  Sequential()
+classifier.add(Dense(output_dim = 6, init = 'uniform', activation = 'relu', input_dim = 11))
+classifier.add(Dense(output_dim = 6, init = 'uniform', activation = 'relu'))
 
-# Adding the input layer and the first hidden layer
-classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu', input_dim = 11))
+#Adding output layer
+classifier.add(Dense(output_dim = 1, init = 'uniform', activation = 'sigmoid'))
 
-# Adding the second hidden layer
-classifier.add(Dense(units = 6, kernel_initializer = 'uniform', activation = 'relu'))
+#Compile the network
+classifier.compile(optimizer= 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
 
-# Adding the output layer
-classifier.add(Dense(units = 1, kernel_initializer = 'uniform', activation = 'sigmoid'))
-
-# Compiling the ANN
-classifier.compile(optimizer = 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
-
-# Fitting the ANN to the Training set
+#Fit an ANN to Training set
 classifier.fit(X_train, y_train, batch_size = 10, epochs = 100)
 
-# Part 3 - Making predictions and evaluating the model
+#Part 3 Making predection and eval models
 
 # Predicting the Test set results
 y_pred = classifier.predict(X_test)
@@ -75,3 +55,28 @@ y_pred = (y_pred > 0.5)
 # Making the Confusion Matrix
 from sklearn.metrics import confusion_matrix
 cm = confusion_matrix(y_test, y_pred)
+
+#Homework
+#Test only one data point with this trained model
+new_pred = classifier.predict(sc.transform(np.array([[0, 0, 600, 1, 40, 3, 60000, 2, 1, 1, 50000]])))
+new_pred = (new_pred > 0.5)
+
+#Part 4 Evaluation and Tuning
+from keras.wrappers.scikit_learn import KerasClassifier
+from sklearn.model_selection import cross_val_score
+from keras.models import Sequential
+from keras.layers import Dense
+def build_classifier():
+    classifier  =  Sequential()
+    classifier.add(Dense(output_dim = 6, init = 'uniform', activation = 'relu', input_dim = 11))
+    classifier.add(Dense(output_dim = 6, init = 'uniform', activation = 'relu'))
+
+    #Adding output layer
+    classifier.add(Dense(output_dim = 1, init = 'uniform', activation = 'sigmoid'))
+
+    #Compile the network
+    classifier.compile(optimizer= 'adam', loss = 'binary_crossentropy', metrics = ['accuracy'])
+    return classifier
+
+classifier = KerasClassifier(build_fn = build_classifier, batch_size = 10, epochs = 100)
+accuracies = cross_val_score(estimator = classifier, X = X_train, y = y_train, cv = 10, n_jobs = -1)
